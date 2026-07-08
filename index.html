@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Leaderboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; }
+        .dashboard { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 500px; text-align: center; }
+        h1 { margin: 0 0 10px 0; color: #333; font-size: 28px; }
+        .subtitle { color: #777; margin-bottom: 30px; font-size: 14px; }
+        .class-row { display: flex; justify-content: space-between; align-items: center; background: #fafafa; margin: 12px 0; padding: 15px 20px; border-radius: 8px; border-left: 5px solid #ccc; transition: 0.3s; }
+        .class-name { font-size: 20px; font-weight: bold; color: #444; display: flex; align-items: center; }
+        .score { font-size: 22px; font-weight: bold; color: #222; }
+        
+        .winner { border-left-color: #FFD700; background: #FFFDF0; box-shadow: 0 2px 10px rgba(255, 215, 0, 0.15); }
+        .winner .class-name::after { content: " 👑"; font-size: 18px; margin-left: 8px; }
+        .winner .score { color: #d4af37; }
+        
+        .loading { font-size: 16px; color: #888; margin: 20px 0; }
+        .refresh-btn { background-color: #007BFF; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 15px; }
+        .refresh-btn:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <h1>🏆 Class Leaderboard</h1>
+    <div class="subtitle">Live Point Rankings (Instant Updates)</div>
+    
+    <div id="loadingStatus" class="loading">Fetching current rankings...</div>
+    
+    <div id="leaderboardList" style="display: none;">
+        <div class="class-row" id="row-1A">
+            <span class="class-name">Class 1A</span>
+            <span class="score" id="score-1A">0 pts</span>
+        </div>
+        <div class="class-row" id="row-1B">
+            <span class="class-name">Class 1B</span>
+            <span class="score" id="score-1B">0 pts</span>
+        </div>
+        <div class="class-row" id="row-1C">
+            <span class="class-name">Class 1C</span>
+            <span class="score" id="score-1C">0 pts</span>
+        </div>
+        <div class="class-row" id="row-1D">
+            <span class="class-name">Class 1D</span>
+            <span class="score" id="score-1D">0 pts</span>
+        </div>
+    </div>
+
+    <button class="refresh-btn" onclick="fetchScores()">🔄 Refresh Standings</button>
+</div>
+
+<script>
+    // Points directly to your existing Google Script layout
+    const API_URL = "https://script.google.com/macros/s/AKfycby0faZ1OOUKj9eX9QYFPMyAIB-mhs5r8oOmh112fpSur3UU04whXijQjVshKb7V_kXj/exec";
+
+    function fetchScores() {
+        const loader = document.getElementById('loadingStatus');
+        const list = document.getElementById('leaderboardList');
+        
+        loader.style.display = "block";
+        loader.innerText = "Updating scoreboard...";
+        
+        fetch(API_URL, {
+            method: "GET",
+            mode: "cors",
+            redirect: "follow"
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Network response error");
+            return res.json();
+        })
+        .then(scores => {
+            if (scores.error) throw new Error(scores.error);
+
+            // Establish safe values from the script's calculations
+            const p1A = scores["1A"] || 0;
+            const p1B = scores["1B"] || 0;
+            const p1C = scores["1C"] || 0;
+            const p1D = scores["1D"] || 0;
+
+            let maxScore = Math.max(p1A, p1B, p1C, p1D);
+            const finalScores = { "1A": p1A, "1B": p1B, "1C": p1C, "1D": p1D };
+            
+            ["1A", "1B", "1C", "1D"].forEach(cls => {
+                const scoreElement = document.getElementById(`score-${cls}`);
+                const rowElement = document.getElementById(`row-${cls}`);
+                const currentPoints = finalScores[cls];
+                
+                scoreElement.innerText = `${currentPoints} pts`;
+                rowElement.classList.remove('winner');
+                
+                // Set crown indicator to the class with highest appearance count
+                if (currentPoints === maxScore && maxScore > 0) {
+                    rowElement.classList.add('winner');
+                }
+            });
+            
+            loader.style.display = "none";
+            list.style.display = "block";
+        })
+        .catch(err => {
+            loader.innerText = "❌ Connection failed. Ensure you deployed a 'New Version' in Apps Script.";
+            console.error(err);
+        });
+    }
+
+    window.onload = fetchScores;
+</script>
+
+</body>
+</html>

@@ -5,41 +5,223 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Class Leaderboard</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; }
-        .dashboard { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 500px; text-align: center; }
-        h1 { margin: 0 0 10px 0; color: #333; font-size: 28px; }
-        .subtitle { color: #777; margin-bottom: 30px; font-size: 14px; }
-        .class-row { display: flex; justify-content: space-between; align-items: center; background: #fafafa; margin: 12px 0; padding: 15px 20px; border-radius: 8px; border-left: 5px solid #ccc; transition: 0.3s; }
-        .class-name { font-size: 20px; font-weight: bold; color: #444; display: flex; align-items: center; }
-        .score { font-size: 22px; font-weight: bold; color: #222; }
-        .winner { border-left-color: #FFD700; background: #FFFDF0; box-shadow: 0 2px 10px rgba(255, 215, 0, 0.15); }
-        .winner .class-name::after { content: " 👑"; font-size: 18px; margin-left: 8px; }
-        .winner .score { color: #d4af37; }
-        .loading { font-size: 16px; color: #888; margin: 20px 0; }
-        .refresh-btn { background-color: #007BFF; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 15px; }
-        .refresh-btn:hover { background-color: #0056b3; }
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --gold: #eab308;
+            --silver: #94a3b8;
+            --bronze: #cbd5e1;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 100%);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .dashboard {
+            background: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            max-width: 480px;
+            text-align: center;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .header-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+            animation: trophy-bounce 2s infinite alternate;
+        }
+
+        @keyframes trophy-bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-6px); }
+        }
+
+        h1 {
+            margin: 0 0 8px 0;
+            color: var(--text-main);
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-sub);
+            margin-bottom: 35px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .leaderboard-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 30px;
+        }
+
+        .class-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            padding: 18px 24px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .class-row:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            background: #ffffff;
+        }
+
+        .left-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .rank-badge {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: var(--text-sub);
+            transition: all 0.3s ease;
+        }
+
+        .class-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .score-container {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .score {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-main);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .score-unit {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-sub);
+        }
+
+        /* Podium Placement Styling */
+        .rank-1 {
+            border: 2px solid rgba(234, 179, 8, 0.3);
+            background: linear-gradient(90deg, #fefce8 0%, #ffffff 100%);
+        }
+        .rank-1 .rank-badge {
+            background: var(--gold);
+            color: white;
+            box-shadow: 0 4px 10px rgba(234, 179, 8, 0.4);
+        }
+        .rank-1 .score { color: #b45309; }
+
+        .rank-2 {
+            border: 2px solid rgba(148, 163, 184, 0.2);
+            background: linear-gradient(90deg, #f1f5f9 0%, #ffffff 100%);
+        }
+        .rank-2 .rank-badge {
+            background: var(--silver);
+            color: white;
+        }
+
+        .rank-3 {
+            border: 2px solid rgba(203, 213, 225, 0.2);
+            background: linear-gradient(90deg, #f8fafc 0%, #ffffff 100%);
+        }
+        .rank-3 .rank-badge {
+            background: #cbd5e1;
+            color: #475569;
+        }
+
+        .loading {
+            font-size: 16px;
+            color: var(--text-sub);
+            margin: 30px 0;
+            font-weight: 500;
+        }
+
+        .refresh-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            width: 100%;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .refresh-btn:hover {
+            background-color: var(--primary-hover);
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .refresh-btn:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
 
 <div class="dashboard">
-    <h1>🏆 Class Leaderboard</h1>
-    <div class="subtitle">Live Point Rankings (Instant Updates)</div>
+    <div class="header-icon">🏆</div>
+    <h1>Class Leaderboard</h1>
+    <div class="subtitle">Live Point Rankings & Standings</div>
     
-    <div id="loadingStatus" class="loading">Connecting to Google Sheet...</div>
+    <div id="loadingStatus" class="loading">Loading live rankings...</div>
     
-    <div id="leaderboardList" style="display: none;">
-        <div class="class-row" id="row-1A"><span class="class-name">Class 1A</span><span class="score" id="score-1A">0 pts</span></div>
-        <div class="class-row" id="row-1B"><span class="class-name">Class 1B</span><span class="score" id="score-1B">0 pts</span></div>
-        <div class="class-row" id="row-1C"><span class="class-name">Class 1C</span><span class="score" id="score-1C">0 pts</span></div>
-        <div class="class-row" id="row-1D"><span class="class-name">Class 1D</span><span class="score" id="score-1D">0 pts</span></div>
-    </div>
+    <div id="leaderboardList" class="leaderboard-container" style="display: none;">
+        </div>
 
-    <button class="refresh-btn" onclick="fetchScores()">🔄 Refresh Standings</button>
+    <button class="refresh-btn" onclick="fetchScores()">
+        <span>🔄</span> Refresh Standings
+    </button>
 </div>
 
 <script>
-    // Pulls data directly from your verified Google Sheet link layout
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/1rPR3M3hTNVZ6NM6LmwphWacWIST7Zr_PQT7_y-EzPRs/gviz/tq?tqx=out:json&sheet=Records";
 
     function fetchScores() {
@@ -47,8 +229,7 @@
         const list = document.getElementById('leaderboardList');
         
         loader.style.display = "block";
-        loader.innerText = "Loading live rankings...";
-
+        
         fetch(SHEET_URL)
         .then(res => res.text())
         .then(txt => {
@@ -59,7 +240,6 @@
 
             if (rows) {
                 rows.forEach(row => {
-                    // Column C is Index 2 in the Google Data Table format structure
                     if (row.c && row.c[2] && row.c[2].v) {
                         const className = row.c[2].v.toString().trim();
                         if (scores.hasOwnProperty(className)) {
@@ -69,23 +249,41 @@
                 });
             }
 
-            let maxScore = Math.max(scores["1A"], scores["1B"], scores["1C"], scores["1D"]);
+            // Convert scores mapping to a sorted array structure dynamically 
+            const sortedData = Object.keys(scores).map(key => {
+                return { className: key, points: scores[key] };
+            }).sort((a, b) => b.points - a.points);
 
-            ["1A", "1B", "1C", "1D"].forEach(cls => {
-                const scoreElement = document.getElementById(`score-${cls}`);
-                const rowElement = document.getElementById(`row-${cls}`);
-                const currentPoints = scores[cls];
-                
-                scoreElement.innerText = `${currentPoints} pts`;
-                rowElement.classList.remove('winner');
-                
-                if (currentPoints === maxScore && maxScore > 0) {
-                    rowElement.classList.add('winner');
-                }
+            // Reconstruct the HTML markup to mirror order tiers
+            list.innerHTML = "";
+            sortedData.forEach((item, index) => {
+                const rank = index + 1;
+                let rankVisual = rank;
+                let topRankStyle = "";
+
+                // Decorate podium positions beautifully
+                if (rank === 1 && item.points > 0) { rankVisual = "🥇"; topRankStyle = "rank-1"; }
+                else if (rank === 2 && item.points > 0) { rankVisual = "🥈"; topRankStyle = "rank-2"; }
+                else if (rank === 3 && item.points > 0) { rankVisual = "🥉"; topRankStyle = "rank-3"; }
+                else if (item.points === 0) { rankVisual = "🏅"; }
+
+                const rowHtml = `
+                    <div class="class-row ${topRankStyle}">
+                        <div class="left-content">
+                            <div class="rank-badge">${rankVisual}</div>
+                            <div class="class-name">Class ${item.className}</div>
+                        </div>
+                        <div class="score-container">
+                            <span class="score">${item.points}</span>
+                            <span class="score-unit">pts</span>
+                        </div>
+                    </div>
+                `;
+                list.insertAdjacentHTML('beforeend', rowHtml);
             });
 
             loader.style.display = "none";
-            list.style.display = "block";
+            list.style.display = "flex";
         })
         .catch(err => {
             loader.innerText = "❌ Configuration error reading spreadsheet layout.";

@@ -138,7 +138,7 @@
             color: var(--text-sub);
         }
 
-        /* Podium Placement Styling */
+        /* Podium Placement Styling elements */
         .rank-1 {
             border: 2px solid rgba(234, 179, 8, 0.3);
             background: linear-gradient(90deg, #fefce8 0%, #ffffff 100%);
@@ -198,10 +198,6 @@
             box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
             transform: translateY(-1px);
         }
-
-        .refresh-btn:active {
-            transform: translateY(0);
-        }
     </style>
 </head>
 <body>
@@ -222,7 +218,7 @@
 </div>
 
 <script>
-    const SHEET_URL = "https://script.google.com/macros/s/AKfycbyKPxpTHeKtS9jyt8D8Zy9pS2uShONVAKR0w-kK8_hEJeLfyC8IDUX65QVxiNAWFal0Nw/exec";
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/1rPR3M3hTNVZ6NM6LmwphWacWIST7Zr_PQT7_y-EzPRs/gviz/tq?tqx=out:json&sheet=Records";
 
     function fetchScores() {
         const loader = document.getElementById('loadingStatus');
@@ -240,6 +236,7 @@
 
             if (rows) {
                 rows.forEach(row => {
+                    // Pull values directly from array row Column C (index 2)
                     if (row.c && row.c[2] && row.c[2].v) {
                         const className = row.c[2].v.toString().trim();
                         if (scores.hasOwnProperty(className)) {
@@ -249,19 +246,17 @@
                 });
             }
 
-            // Convert scores mapping to a sorted array structure dynamically 
+            // Maps out properties and handles sorting dynamically 
             const sortedData = Object.keys(scores).map(key => {
                 return { className: key, points: scores[key] };
             }).sort((a, b) => b.points - a.points);
 
-            // Reconstruct the HTML markup to mirror order tiers
             list.innerHTML = "";
             sortedData.forEach((item, index) => {
                 const rank = index + 1;
                 let rankVisual = rank;
                 let topRankStyle = "";
 
-                // Decorate podium positions beautifully
                 if (rank === 1 && item.points > 0) { rankVisual = "🥇"; topRankStyle = "rank-1"; }
                 else if (rank === 2 && item.points > 0) { rankVisual = "🥈"; topRankStyle = "rank-2"; }
                 else if (rank === 3 && item.points > 0) { rankVisual = "🥉"; topRankStyle = "rank-3"; }
